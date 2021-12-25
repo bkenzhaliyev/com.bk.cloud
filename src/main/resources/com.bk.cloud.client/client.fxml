@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="632.0"
+      prefWidth="398.0" xmlns="http://javafx.com/javafx/8"
+      fx:controller="com.bk.cloud.client.ClientController"
+      xmlns:fx="http://javafx.com/fxml/1">
+    <ListView fx:id="listView" prefHeight="733.0" prefWidth="398.0"/>
+    <TextField fx:id="textField" editable="false" onAction="#sendMessage" prefHeight="200.0" prefWidth="200.0"/>
+</VBox>
