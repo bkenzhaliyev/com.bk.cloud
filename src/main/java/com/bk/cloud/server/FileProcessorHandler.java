@@ -1,8 +1,13 @@
 package com.bk.cloud.server;
 
-import java.io.*;
+import com.bk.cloud.utils.SenderUtils;
+import javafx.scene.control.ListView;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.Path;
 
 public class FileProcessorHandler implements Runnable {
 
@@ -17,6 +22,7 @@ public class FileProcessorHandler implements Runnable {
         os = new DataOutputStream(socket.getOutputStream());
         buf = new byte[SIZE];
         currentDir = new File("serverDir");
+        SenderUtils.sendFilesListToOutputStream(os, currentDir);
     }
 
     @Override
@@ -24,21 +30,15 @@ public class FileProcessorHandler implements Runnable {
         try {
             while (true) {
                 String command = is.readUTF();
-                System.out.println("Received: " + command);
-                if (command.equals("#SEND#FILE#")) {
+                System.out.println("Server get command: " + command);
+                if (command.equals("#SEND#FILE")) {
+                    SenderUtils.getFileFromInputStream(is, currentDir);
+                    SenderUtils.sendFilesListToOutputStream(os, currentDir);
+                }
+                if (command.equals("#GET#FILE")) {
                     String fileName = is.readUTF();
-                    long size = is.readLong();
-                    System.out.println("Created file: " + fileName);
-                    System.out.println("File size: " + size);
-                    Path currentPath = currentDir.toPath().resolve(fileName);
-                    try (FileOutputStream fos = new FileOutputStream(currentPath.toFile())) {
-                        for (int i = 0; i < (size + SIZE - 1) / SIZE; i++) {
-                            int read = is.read(buf);
-                            fos.write(buf, 0, read);
-                        }
-                    }
-                    os.writeUTF("File successfully uploaded");
-                    os.flush();
+                    File file = currentDir.toPath().resolve(fileName).toFile();
+                    SenderUtils.loadFileToOutputStream(os, file);
                 }
             }
         } catch (Exception e) {

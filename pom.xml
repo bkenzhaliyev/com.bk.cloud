@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.bk.myCloud</groupId>
-    <artifactId>com.bk.cloud</artifactId>
+    <artifactId>cloud-storage</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
