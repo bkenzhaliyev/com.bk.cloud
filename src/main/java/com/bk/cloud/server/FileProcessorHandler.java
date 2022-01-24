@@ -22,7 +22,9 @@ public class FileProcessorHandler implements Runnable {
         os = new DataOutputStream(socket.getOutputStream());
         buf = new byte[SIZE];
         currentDir = new File("serverDir");
+
         SenderUtils.sendFilesListToOutputStream(os, currentDir);
+        SenderUtils.sendRootDirToOutputStream(os, currentDir);
     }
 
     @Override
@@ -30,7 +32,7 @@ public class FileProcessorHandler implements Runnable {
         try {
             while (true) {
                 String command = is.readUTF();
-                System.out.println("Server get command: " + command);
+//                System.out.println("Server get command: " + command);
                 if (command.equals("#SEND#FILE")) {
                     SenderUtils.getFileFromInputStream(is, currentDir);
                     SenderUtils.sendFilesListToOutputStream(os, currentDir);
@@ -39,6 +41,17 @@ public class FileProcessorHandler implements Runnable {
                     String fileName = is.readUTF();
                     File file = currentDir.toPath().resolve(fileName).toFile();
                     SenderUtils.loadFileToOutputStream(os, file);
+                }
+                if (command.equals("#LIST#DIR")) {
+                    String directory = currentDir.toString() + "\\" + is.readUTF();
+                    if(directory.equals("..")){
+                        currentDir = new File(currentDir.getParent());
+                    }else{
+                        currentDir = new File(directory);
+                    }
+
+                    SenderUtils.sendFilesListToOutputStream(os, currentDir);
+                    SenderUtils.sendRootDirToOutputStream(os, currentDir);
                 }
             }
         } catch (Exception e) {

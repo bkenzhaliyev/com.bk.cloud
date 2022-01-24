@@ -1,6 +1,7 @@
 package com.bk.cloud.utils;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 
@@ -40,13 +41,26 @@ public class SenderUtils {
 
     public static void sendFilesListToOutputStream(DataOutputStream os, File currentDir) throws IOException {
         String[] files = currentDir.list();
-        if(files != null){
+        if (files != null) {
             os.writeUTF("#List");
             os.writeInt(files.length);
             for (String file : files) {
-                os.writeUTF(file);
+                Path path = currentDir.toPath().resolve(file);
+                if (Files.isDirectory(path)) {
+                    FileInfo fileInfo = new FileInfo(file, "[DIR]");
+                    os.writeUTF(fileInfo.toString());
+                } else {
+                    long size = file.length();
+                    FileInfo fileInfo = new FileInfo(file, String.format("%,d bytes", size));
+                    os.writeUTF(fileInfo.toString());
+                }
             }
         }
 
+    }
+
+    public static void sendRootDirToOutputStream(DataOutputStream os, File currentDir) throws IOException {
+        os.writeUTF("#ROOTDIR");
+        os.writeUTF(currentDir.toString());
     }
 }
