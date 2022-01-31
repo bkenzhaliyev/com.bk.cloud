@@ -7,11 +7,19 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,6 +35,8 @@ public class TableController implements Initializable {
 
     private final String HOST = "localhost";
     private final int PORT = 8189;
+    public TextField pswdField;
+    public TextField userName;
 
 
     private ObservableList<FileInfo> clientList = FXCollections.observableArrayList();
@@ -55,6 +65,16 @@ public class TableController implements Initializable {
     private File currentDir;
     private File serverRootDir;
 
+    private String newDirName;
+    private Stage newFileStage;
+    private Stage regStage;
+
+    private NewFileController newFileController;
+    private regController regController;
+
+    private boolean authenticated;
+    private String nickname;
+    private String login;
 
     private byte[] buf;
 
@@ -79,13 +99,19 @@ public class TableController implements Initializable {
                 if (command.equals("#SEND#FILE")) {
                     SenderUtils.getFileFromInputStream(is, currentDir);
                 }
-                if(command.equals("#ROOTDIR")){
+                if (command.equals("#ROOTDIR")) {
                     String fileName = is.readUTF();
                     System.out.println(fileName);
 //                    serverRootDir  = new File(System.getProperty(fileName));
 //                    Path path = serverRootDir.toPath().resolve(fileName);
 //                    serverRootDir = path.toFile();
                     serverDir.setText(fileName);
+                }
+                if (command.equals("#regOk")) {
+                    regController.regResult("Регистрация прошла успешно");
+                }
+                if (command.equals("#regNo")) {
+                    regController.regResult("Логин или никнейм уже заняты");
                 }
 
             }
@@ -116,9 +142,8 @@ public class TableController implements Initializable {
         }
 
         clientTab.setItems(clientList);
-        // устанавливаем тип и значение которое должно хранится в колонке
-        clientFileName.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("fileName"));
-        clientFileType.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("fileType"));
+        clientTab.sort();
+
 
     }
 
@@ -167,6 +192,12 @@ public class TableController implements Initializable {
         try {
             buf = new byte[256];
             currentDir = new File(System.getProperty("user.home"));
+            // устанавливаем тип и значение которое должно хранится в колонке
+            clientFileName.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("fileName"));
+            clientFileType.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("fileType"));
+            clientTab.getSortOrder().add(clientFileType);
+            clientTab.getSortOrder().add(clientFileName);
+
             fillCurrentDirFiles();
             initClickListener();
             Socket socket = new Socket(HOST, PORT);
@@ -192,10 +223,116 @@ public class TableController implements Initializable {
     public void download(ActionEvent actionEvent) throws IOException {
         FileInfo selectedFile = clientTab.getSelectionModel().getSelectedItem();
         String fileName = selectedFile.getFileName();
-        System.out.println("File download " + fileName);
+//        System.out.println("File download " + fileName);
         os.writeUTF("#GET#FILE");
         os.writeUTF(fileName);
         os.flush();
     }
 
+    public void btnChooseDir(ActionEvent actionEvent) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(new Stage());
+        if (selectedDirectory != null) {
+            currentDir = selectedDirectory;
+            clientDir.setText(currentDir.getAbsolutePath());
+            fillCurrentDirFiles();
+        }
+    }
+
+    public void delete(ActionEvent actionEvent) throws IOException {
+        FileInfo selectedFile = serverTab.getSelectionModel().getSelectedItem();
+        String fileName = selectedFile.getFileName();
+        os.writeUTF("#DELETE#FILE");
+        os.writeUTF(fileName);
+        os.flush();
+    }
+
+    public void newDir(ActionEvent actionEvent) throws IOException {
+        if (newFileStage == null) {
+            createNewFileWindow(true);
+        }
+        newFileStage.show();
+    }
+
+    public void createNewFileWindow(boolean dir) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("newFile.fxml"));
+            Parent root = fxmlLoader.load();
+            newFileStage = new Stage();
+            String title = null;
+            if (dir = true) {
+                title = "Создание папки...";
+            } else {
+                title = "Создание файла...";
+            }
+            newFileStage.setTitle(title);
+            newFileStage.setScene(new Scene(root, 292, 80));
+            newFileController = fxmlLoader.getController();
+            newFileController.setController(this);
+
+            newFileStage.initStyle(StageStyle.UTILITY);
+            newFileStage.initModality(Modality.APPLICATION_MODAL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void CreateNewDirName(String dir) throws IOException {
+        os.writeUTF("#CREATE#DIR");
+        os.writeUTF(dir);
+        os.flush();
+    }
+
+    public void registration(String login, String password, String nickname) throws IOException {
+        String regMsg = String.format("%s %s %s",login, password, nickname);
+        os.writeUTF("#NEW#USER");
+        os.writeUTF(regMsg);
+        os.flush();
+     }
+
+    public void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
+        clientTab.setVisible(authenticated);
+        serverTab.setManaged(authenticated);
+
+        if (!authenticated) {
+            nickname = "";
+        }
+    }
+
+    public void tryToAuth(ActionEvent actionEvent) throws IOException {
+        String login = userName.getText().trim();
+        this.login = login;
+        String password = pswdField.getText().trim();
+
+        String str = String.format("#AUTH %s %s", login, password);
+        System.out.println("Auth command: " + str);
+        os.writeUTF("#AUTH");
+        os.writeUTF(str);
+        os.flush();
+    }
+
+    public void tryToReg(ActionEvent actionEvent) {
+        if (regStage == null) {
+            createRegWindow();
+        }
+        regStage.show();
+    }
+
+    private void createRegWindow() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("reg.fxml"));
+            Parent root = fxmlLoader.load();
+            regStage = new Stage();
+            regStage.setTitle("Регистрация нового пользователя...");
+            regStage.setScene(new Scene(root, 280, 139));
+            regController = fxmlLoader.getController();
+            regController.setController(this);
+
+            regStage.initStyle(StageStyle.UTILITY);
+            regStage.initModality(Modality.APPLICATION_MODAL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.bk.cloud.utils;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,5 +63,9 @@ public class SenderUtils {
     public static void sendRootDirToOutputStream(DataOutputStream os, File currentDir) throws IOException {
         os.writeUTF("#ROOTDIR");
         os.writeUTF(currentDir.toString());
+    }
+
+    public static void sendMsgToClient(DataOutputStream os, String msg) throws IOException {
+        os.writeUTF(msg);
     }
 }

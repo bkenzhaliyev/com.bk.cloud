@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="center" prefHeight="139.0" prefWidth="282.0"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/8"
+      fx:controller="com.bk.cloud.client.regController">
+
+<!--    <stylesheets>-->
+<!--        <URL value="@/css/style.css"/>-->
+<!--    </stylesheets>-->
+
+
+    <TextField fx:id="loginField" promptText="Логин" HBox.hgrow="ALWAYS" />
+    <PasswordField fx:id="passwordField" promptText="пароль" HBox.hgrow="ALWAYS" />
+    <TextField fx:id="nicknameField" promptText="ник..." HBox.hgrow="ALWAYS" />
+
+    <TextArea fx:id="textArea" editable="false" prefHeight="17.0" prefWidth="282.0" VBox.vgrow="ALWAYS" />
+
+    <Button onAction="#tryToReg" text="Регистрация" />
+
+</VBox>

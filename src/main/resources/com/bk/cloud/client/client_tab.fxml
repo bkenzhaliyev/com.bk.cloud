@@ -9,6 +9,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <HBox xmlns="http://javafx.com/javafx/8"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bk.cloud.client.TableController">
@@ -19,7 +21,9 @@
                <Label prefHeight="25.0" prefWidth="46.0" text="Логин" />
                <TextField fx:id="userName" prefHeight="25.0" prefWidth="169.0" />
                <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="24.0" prefWidth="58.0" text="Пароль " />
-               <TextField fx:id="password" />
+               <TextField fx:id="pswdField" />
+                <Button fx:id="tryToAuth" onAction="#tryToAuth" text="Авторизация" HBox.hgrow="ALWAYS" />
+                <Button fx:id="tryToReg" onAction="#tryToReg" text="Регистрация" HBox.hgrow="ALWAYS" />
             </children>
          </HBox>
             <HBox>
@@ -29,8 +33,17 @@
             </HBox>
          <HBox prefHeight="81.0" prefWidth="815.0">
             <children>
-               <TextField fx:id="clientDir" disable="true" editable="false" prefHeight="25.0" prefWidth="410.0" />
-               <TextField fx:id="serverDir" disable="true" editable="false" prefHeight="25.0" prefWidth="410.0" />
+                <TextField fx:id="clientDir" disable="true" editable="false" prefHeight="25.0" prefWidth="370.0" />
+                <Button onAction="#btnChooseDir">
+                    <graphic>
+                        <ImageView fitHeight="17.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="/image/open-file.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Button>
+                <TextField fx:id="serverDir" disable="true" editable="false" prefHeight="25.0" prefWidth="392.0" />
             </children>
          </HBox>
             <HBox prefHeight="379.0" prefWidth="666.0">
@@ -53,7 +66,8 @@
             <children>
                   <Button fx:id="upload" onAction="#upload" text="Загрузить" HBox.hgrow="ALWAYS" />
                   <Button fx:id="download" onAction="#download" text="Выгрузить" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="delete" text="Удалить" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="delete" onAction="#delete" text="Удалить" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="newDir" onAction="#newDir" text="Создать папку" HBox.hgrow="ALWAYS" />
                   <Button fx:id="exit" text="Выход" HBox.hgrow="ALWAYS" />
             </children>
          </HBox>

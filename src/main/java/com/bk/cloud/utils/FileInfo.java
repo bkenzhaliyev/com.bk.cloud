@@ -43,7 +43,6 @@ public class FileInfo {
     }
 
     public void fileInfoFromString(String file) {
-        System.out.println("split string: " + file);
         if (file.contains("-&!&-")) {
             String[] parts = file.split("-&!&-");
             this.fileName = parts[0];
