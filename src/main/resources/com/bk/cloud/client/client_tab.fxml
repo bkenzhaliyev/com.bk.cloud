@@ -5,7 +5,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<HBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.bk.cloud.client.TableController">
     <HBox>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="419.0"
@@ -13,10 +13,10 @@
             <HBox fx:id="loginPanel" prefHeight="34.0" prefWidth="815.0">
                 <children>
                     <Label prefHeight="25.0" prefWidth="46.0" text="Логин"/>
-                    <TextField fx:id="userName" prefHeight="25.0" prefWidth="169.0"/>
+                    <TextField fx:id="userName" promptText="Логин" prefHeight="25.0" prefWidth="169.0"/>
                     <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="24.0" prefWidth="58.0"
                            text="Пароль "/>
-                    <TextField fx:id="pswdField"/>
+                    <PasswordField fx:id="pswdField" promptText="пароль" />
                     <Button fx:id="tryToAuth" onAction="#tryToAuth" text="Авторизация" HBox.hgrow="ALWAYS"/>
                     <Button fx:id="tryToReg" onAction="#tryToReg" text="Регистрация" HBox.hgrow="ALWAYS"/>
                 </children>
@@ -26,7 +26,7 @@
                     <Insets bottom="1.0" left="1.0" right="1.0" top="1.0"/>
                 </VBox.margin>
             </HBox>
-            <HBox prefHeight="81.0" prefWidth="815.0">
+            <HBox prefHeight="81.0" prefWidth="815.0" fx:id="tablePanel">
                 <children>
                     <TextField fx:id="clientDir" disable="true" editable="false" prefHeight="25.0" prefWidth="301.0"/>
                     <Button onAction="#btnChooseDir">

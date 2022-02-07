@@ -18,7 +18,7 @@
         <HBox layoutX="5.0" layoutY="43.0" prefHeight="25.0" prefWidth="283.0" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0">
             <children>
                 <Button fx:id="btnNewFile" mnemonicParsing="false" onAction="#newFile" HBox.hgrow="ALWAYS" maxWidth="Infinity" text="Создать"/>
-                <Button fx:id="btnNewDir" mnemonicParsing="false" onAction="#newFile" HBox.hgrow="ALWAYS" maxWidth="Infinity" text="Создать"/>
+                <Button fx:id="btnNewDir" mnemonicParsing="false" onAction="#newDir" HBox.hgrow="ALWAYS" maxWidth="Infinity" text="Создать"/>
                 <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#cancel" HBox.hgrow="ALWAYS" maxWidth="Infinity" text="Отменить" />
             </children>
         </HBox>

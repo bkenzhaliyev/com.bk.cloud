@@ -84,7 +84,6 @@ public class TableController implements Initializable {
     private File currentDir;
     private String serverRootDir;
 
-    private String newDirName;
     private Stage newFileStage;
     private Stage regStage;
 
@@ -115,6 +114,7 @@ public class TableController implements Initializable {
                         serverFileName.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("fileName"));
                         serverFileType.setCellValueFactory(new PropertyValueFactory<FileInfo, String>("fileType"));
                     }
+//                    serverTab.sort();
                 }
                 if (command.equals("#SEND#FILE")) {
                     SenderUtils.getFileFromInputStream(is, currentDir);
@@ -127,9 +127,9 @@ public class TableController implements Initializable {
                 }
                 if (command.equals("#CURRENTDIR")) {
                     String fileName = is.readUTF();
-                    if (fileName.equals(serverRootDir)){
+                    if (fileName.equals(serverRootDir)) {
                         serverUpDir.setDisable(true);
-                    }else{
+                    } else {
                         serverUpDir.setDisable(false);
                     }
                     serverDir.setText(fileName);
@@ -179,8 +179,6 @@ public class TableController implements Initializable {
 
         clientTab.setItems(clientList);
         clientTab.sort();
-
-
     }
 
     private void initClickListener() {
@@ -275,12 +273,14 @@ public class TableController implements Initializable {
         os.flush();
     }
 
-    public void newDir(ActionEvent actionEvent) throws IOException {
-        if (newFileStage == null) {
-            createNewFileWindow("DIR");
+    public void tryToReg(ActionEvent actionEvent) {
+        if (regStage != null) {
+            regStage.close();
         }
-        newFileStage.show();
+        createRegWindow();
+        regStage.show();
     }
+
 
     public void createNewFileWindow(String file) {
         try {
@@ -314,15 +314,15 @@ public class TableController implements Initializable {
         }
     }
 
-    public void CreateNewDirName(String dir) throws IOException {
+    public void CreateNewDir(String dir) throws IOException {
         os.writeUTF("#CREATE#DIR");
         os.writeUTF(dir);
         os.flush();
     }
 
-    public void CreateNewFile(String dir) throws IOException {
+    public void CreateNewFile(String fileName) throws IOException {
         os.writeUTF("#CREATE#FILE");
-        os.writeUTF(dir);
+        os.writeUTF(fileName);
         os.flush();
     }
 
@@ -352,13 +352,6 @@ public class TableController implements Initializable {
         os.writeUTF("#AUTH");
         os.writeUTF(str);
         os.flush();
-    }
-
-    public void tryToReg(ActionEvent actionEvent) {
-        if (regStage == null) {
-            createRegWindow();
-        }
-        regStage.show();
     }
 
     private void createRegWindow() {
@@ -401,9 +394,18 @@ public class TableController implements Initializable {
     }
 
     public void newFile(ActionEvent actionEvent) throws IOException {
-        if (newFileStage == null) {
-            createNewFileWindow("File");
+        if (newFileStage != null) {
+            newFileStage.close();
         }
+        createNewFileWindow("File");
+        newFileStage.show();
+    }
+
+    public void newDir(ActionEvent actionEvent) throws IOException {
+        if (newFileStage != null) {
+            newFileStage.close();
+        }
+        createNewFileWindow("DIR");
         newFileStage.show();
     }
 
