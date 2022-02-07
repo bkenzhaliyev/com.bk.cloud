@@ -36,6 +36,18 @@ public class TableController implements Initializable {
 
     private final String HOST = "localhost";
     private final int PORT = 8189;
+    @FXML
+    public Button serverUpDir;
+    @FXML
+    public Button upload;
+    @FXML
+    public Button download;
+    @FXML
+    public Button delete;
+    @FXML
+    public Button newDir;
+    @FXML
+    public Button newFile;
 
     private ObservableList<FileInfo> clientList = FXCollections.observableArrayList();
 
@@ -93,7 +105,6 @@ public class TableController implements Initializable {
                 String command = is.readUTF();
                 if (command.equals("#List")) {
                     Platform.runLater(() -> serverTab.getItems().clear());
-                    Platform.runLater(() -> serverTab.getItems().add(new FileInfo("..", "[DIR]")));
                     int count = is.readInt();
                     for (int i = 0; i < count; i++) {
                         String fileName = is.readUTF();
@@ -110,8 +121,17 @@ public class TableController implements Initializable {
                 }
                 if (command.equals("#ROOTDIR")) {
                     String fileName = is.readUTF();
-//                    System.out.println(fileName);
                     serverRootDir = fileName;
+                    serverDir.setText(fileName);
+                    serverUpDir.setDisable(true);
+                }
+                if (command.equals("#CURRENTDIR")) {
+                    String fileName = is.readUTF();
+                    if (fileName.equals(serverRootDir)){
+                        serverUpDir.setDisable(true);
+                    }else{
+                        serverUpDir.setDisable(false);
+                    }
                     serverDir.setText(fileName);
                 }
                 if (command.equals("#regOk")) {
@@ -123,6 +143,11 @@ public class TableController implements Initializable {
                     regController.regResult("Логин или никнейм уже заняты");
                 }
                 if (command.equals("#AuthOK")) {
+                    upload.setDisable(false);
+                    download.setDisable(false);
+                    delete.setDisable(false);
+                    newDir.setDisable(false);
+                    newFile.setDisable(false);
                     loginPanel.setVisible(false);
                     nickname = userName.getText();
                     setTitle(nickname);
@@ -141,9 +166,6 @@ public class TableController implements Initializable {
         clientList.clear();
         File[] listFiles = currentDir.listFiles();
         String rootPath = currentDir.toPath().getRoot().toString();
-        if (!rootPath.toString().equals(currentDir.toString())) {
-            clientList.add(new FileInfo("..", "[DIR]"));
-        }
 
         for (int i = 0; i < listFiles.length; i++) {
             Path path = currentDir.toPath().resolve(listFiles[i].toString());
@@ -166,16 +188,9 @@ public class TableController implements Initializable {
             if (e.getClickCount() == 2) {
                 FileInfo selectedFile = clientTab.getSelectionModel().getSelectedItem();
                 String fileName = selectedFile.getFileName();
-//                System.out.println("select file: " + selectedFile.getFileName());
                 Path path = currentDir.toPath().resolve(fileName);
                 if (Files.isDirectory(path)) {
-                    if (selectedFile.getFileName().equals("..")) {
-                        currentDir = new File(currentDir.getParent());
-                    } else {
-                        currentDir = path.toFile();
-                    }
-
-//                    System.out.println("current dir: " + currentDir);
+                    currentDir = path.toFile();
                     fillCurrentDirFiles();
                 }
             }
@@ -184,11 +199,6 @@ public class TableController implements Initializable {
         serverTab.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
                 FileInfo selectedFile = serverTab.getSelectionModel().getSelectedItem();
-                if (selectedFile.getFileName().equals("..")) {
-                    if (selectedFile.getFileName().equals(serverRootDir)) {
-                        return;
-                    }
-                }
                 if (selectedFile.getFileType().equals("[DIR]")) {
                     try {
                         os.writeUTF("#LIST#DIR");
@@ -267,18 +277,19 @@ public class TableController implements Initializable {
 
     public void newDir(ActionEvent actionEvent) throws IOException {
         if (newFileStage == null) {
-            createNewFileWindow(true);
+            createNewFileWindow("DIR");
         }
         newFileStage.show();
     }
 
-    public void createNewFileWindow(boolean dir) {
+    public void createNewFileWindow(String file) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("newFile.fxml"));
             Parent root = fxmlLoader.load();
             newFileStage = new Stage();
             String title = null;
-            if (dir = true) {
+
+            if (file.equals("DIR")) {
                 title = "Создание папки...";
             } else {
                 title = "Создание файла...";
@@ -287,6 +298,14 @@ public class TableController implements Initializable {
             newFileStage.setScene(new Scene(root, 292, 80));
             newFileController = fxmlLoader.getController();
             newFileController.setController(this);
+
+            if (file.equals("DIR")) {
+                newFileController.btnNewFile.setVisible(false);
+                newFileController.btnNewDir.setVisible(true);
+            } else {
+                newFileController.btnNewFile.setVisible(true);
+                newFileController.btnNewDir.setVisible(false);
+            }
 
             newFileStage.initStyle(StageStyle.UTILITY);
             newFileStage.initModality(Modality.APPLICATION_MODAL);
@@ -297,6 +316,12 @@ public class TableController implements Initializable {
 
     public void CreateNewDirName(String dir) throws IOException {
         os.writeUTF("#CREATE#DIR");
+        os.writeUTF(dir);
+        os.flush();
+    }
+
+    public void CreateNewFile(String dir) throws IOException {
+        os.writeUTF("#CREATE#FILE");
         os.writeUTF(dir);
         os.flush();
     }
@@ -324,7 +349,6 @@ public class TableController implements Initializable {
         String password = pswdField.getText().trim();
 
         String str = String.format("#AUTH %s %s", login, password);
-//        System.out.println("Auth command: " + str);
         os.writeUTF("#AUTH");
         os.writeUTF(str);
         os.flush();
@@ -355,20 +379,40 @@ public class TableController implements Initializable {
     }
 
     public void clientUpDir(ActionEvent actionEvent) {
-        String rootPath = currentDir.toPath().getRoot().toString();
-        if (!rootPath.toString().equals(currentDir.toString())) {
-            clientList.add(new FileInfo("..", "[DIR]"));
-        }
+        Path path = currentDir.toPath().getParent();
+        currentDir = path.toFile();
+        fillCurrentDirFiles();
     }
 
     private void setTitle(String nickname) {
         stage = (Stage) clientDir.getScene().getWindow();
         Platform.runLater(() -> {
-        if (!nickname.equals("")) {
-            stage.setTitle(String.format("MyCloud - [ %s ]", nickname));
-        } else {
-            stage.setTitle("MyCloud - необходимо авторизоваться...");
+            if (!nickname.equals("")) {
+                stage.setTitle(String.format("MyCloud - [ %s ]", nickname));
+            } else {
+                stage.setTitle("MyCloud - необходимо авторизоваться...");
+            }
+        });
+    }
+
+    public void serverUpDir(ActionEvent actionEvent) throws IOException {
+        os.writeUTF("#DIR#UP");
+        os.flush();
+    }
+
+    public void newFile(ActionEvent actionEvent) throws IOException {
+        if (newFileStage == null) {
+            createNewFileWindow("File");
         }
+        newFileStage.show();
+    }
+
+    public void onExit(ActionEvent actionEvent) throws IOException {
+        os.writeUTF("#END");
+        os.flush();
+        Platform.runLater(() -> {
+            Stage stage = (Stage) clientTab.getScene().getWindow();
+            stage.close();
         });
     }
 }

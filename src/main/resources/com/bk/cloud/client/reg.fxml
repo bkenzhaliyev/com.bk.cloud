@@ -8,11 +8,6 @@
       xmlns="http://javafx.com/javafx/8"
       fx:controller="com.bk.cloud.client.regController">
 
-<!--    <stylesheets>-->
-<!--        <URL value="@/css/style.css"/>-->
-<!--    </stylesheets>-->
-
-
     <TextField fx:id="loginField" promptText="Логин" HBox.hgrow="ALWAYS" />
     <PasswordField fx:id="passwordField" promptText="пароль" HBox.hgrow="ALWAYS" />
     <TextField fx:id="nicknameField" promptText="ник..." HBox.hgrow="ALWAYS" />

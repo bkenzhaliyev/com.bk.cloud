@@ -25,7 +25,7 @@ public class FileProcessorHandler {
 
     private boolean authenticated;
     private String nickname;
-    private String rootDir;
+    private File rootDir;
     private String login;
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
@@ -56,9 +56,9 @@ public class FileProcessorHandler {
 
                         nickname = server.getAuthService()
                                 .getNicknameByLoginAndPassword(token[1], token[2]);
-                        rootDir = server.getAuthService()
-                                .getRootDirByLoginAndPassword(token[1], token[2]);
-                        createRootDir(rootDir);
+                        rootDir = new File(server.getAuthService()
+                                .getRootDirByLoginAndPassword(token[1], token[2]));
+                        createRootDir(rootDir.toString());
 
                         login = token[1];
                         if (nickname != null) {
@@ -80,7 +80,7 @@ public class FileProcessorHandler {
                             logger.log(Level.INFO, "Неверный логин/пароль " + login, true);
                         }
                     }
-                    if (command.equals("#NEW#USER")){
+                    if (command.equals("#NEW#USER")) {
                         String str = is.readUTF();
                         String[] token = str.split("\\s+");
                         if (token.length < 3) {
@@ -117,14 +117,10 @@ public class FileProcessorHandler {
                     }
                     if (command.equals("#LIST#DIR")) {
                         String directory = currentDir.toString() + "\\" + is.readUTF();
-                        if (directory.equals("..")) {
-                            currentDir = new File(currentDir.getParent());
-                        } else {
-                            currentDir = new File(directory);
-                        }
+                        currentDir = new File(directory);
 
                         SenderUtils.sendFilesListToOutputStream(os, currentDir);
-                        SenderUtils.sendRootDirToOutputStream(os, currentDir);
+                        SenderUtils.sendServerCurrentDirToOutputStream(os, currentDir);
                     }
                     if (command.equals("#DELETE#FILE")) {
                         String fileName = is.readUTF();
@@ -137,6 +133,25 @@ public class FileProcessorHandler {
                         Path path = Paths.get(currentDir + "/" + newDir);
                         Path dir = Files.createDirectory(path);
                         SenderUtils.sendFilesListToOutputStream(os, currentDir);
+                    }
+                    if (command.equals("#CREATE#FILE")) {
+                        String newDir = is.readUTF();
+                        Path path = Paths.get(currentDir + "/" + newDir);
+                        Path dir = Files.createFile(path);
+                        SenderUtils.sendFilesListToOutputStream(os, currentDir);
+                    }
+                    if (command.equals("#DIR#UP")) {
+                        if (currentDir.getAbsolutePath().equals(rootDir.getAbsolutePath())) {
+                            return;
+                        }
+                        Path path = currentDir.toPath().getParent();
+                        currentDir = path.toFile();
+                        SenderUtils.sendFilesListToOutputStream(os, currentDir);
+                        SenderUtils.sendServerCurrentDirToOutputStream(os, currentDir);
+                    }
+                    if (command.equals("#END")) {
+                        logger.log(Level.INFO, "Client disconnected", true);
+                        break;
                     }
                 }
 
@@ -156,7 +171,6 @@ public class FileProcessorHandler {
     }
 
 
-
     public String getNickname() {
         return nickname;
     }
@@ -166,9 +180,9 @@ public class FileProcessorHandler {
         return login;
     }
 
-    private void createRootDir(String rootDir){
+    private void createRootDir(String rootDir) {
         File dir = new File(currentDir + "/" + rootDir);
-        if (!dir.exists()){
+        if (!dir.exists()) {
             dir.mkdir();
         }
         currentDir = new File(currentDir + "/" + rootDir);

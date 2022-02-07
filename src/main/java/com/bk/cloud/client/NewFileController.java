@@ -16,10 +16,11 @@ public class NewFileController {
     public Button btnCancel;
     @FXML
     public Button btnNewFile;
+    public Button btnNewDir;
 
     private TableController controller;
 
-    public void newFile(ActionEvent actionEvent) throws IOException {
+    public void newDir(ActionEvent actionEvent) throws IOException {
         String fileName = newFileName.getText().trim();
         controller.CreateNewDirName(fileName);
     }
@@ -32,5 +33,9 @@ public class NewFileController {
         this.controller = controller;
     }
 
+    public void newFile(ActionEvent actionEvent) throws IOException {
+        String fileName = newFileName.getText().trim();
+        controller.CreateNewFile(fileName);
+    }
 }
 

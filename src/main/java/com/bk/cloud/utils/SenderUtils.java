@@ -65,6 +65,11 @@ public class SenderUtils {
         os.writeUTF(currentDir.toString());
     }
 
+    public static void sendServerCurrentDirToOutputStream(DataOutputStream os, File currentDir) throws IOException {
+        os.writeUTF("#CURRENTDIR");
+        os.writeUTF(currentDir.toString());
+    }
+
     public static void sendMsgToClient(DataOutputStream os, String msg) throws IOException {
         os.writeUTF(msg);
     }
