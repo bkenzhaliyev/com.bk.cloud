@@ -25,6 +25,7 @@ public class FileProcessorHandler {
 
     private boolean authenticated;
     private String nickname;
+    private String rootDir;
     private String login;
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
@@ -55,11 +56,15 @@ public class FileProcessorHandler {
 
                         nickname = server.getAuthService()
                                 .getNicknameByLoginAndPassword(token[1], token[2]);
+                        rootDir = server.getAuthService()
+                                .getRootDirByLoginAndPassword(token[1], token[2]);
+                        createRootDir(rootDir);
+
                         login = token[1];
                         if (nickname != null) {
                             if (!server.isLoginAuthenticated(login)) {
                                 authenticated = true;
-
+                                SenderUtils.sendMsgToClient(os, "#AuthOK");
                                 try {
                                     SenderUtils.sendFilesListToOutputStream(os, currentDir);
                                     SenderUtils.sendRootDirToOutputStream(os, currentDir);
@@ -159,5 +164,13 @@ public class FileProcessorHandler {
 
     public String getLogin() {
         return login;
+    }
+
+    private void createRootDir(String rootDir){
+        File dir = new File(currentDir + "/" + rootDir);
+        if (!dir.exists()){
+            dir.mkdir();
+        }
+        currentDir = new File(currentDir + "/" + rootDir);
     }
 }

@@ -11,6 +11,7 @@ public class ClientApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent parent = FXMLLoader.load(getClass().getResource("client_tab.fxml"));
         primaryStage.setScene(new Scene(parent));
+        primaryStage.setTitle("MyCloud - необходимо авторизоваться...");
         primaryStage.show();
     }
 }

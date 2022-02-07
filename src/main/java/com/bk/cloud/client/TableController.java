@@ -16,6 +16,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -35,9 +36,6 @@ public class TableController implements Initializable {
 
     private final String HOST = "localhost";
     private final int PORT = 8189;
-    public TextField pswdField;
-    public TextField userName;
-
 
     private ObservableList<FileInfo> clientList = FXCollections.observableArrayList();
 
@@ -45,7 +43,6 @@ public class TableController implements Initializable {
     public TextField clientDir;
     @FXML
     public TextField serverDir;
-
     @FXML
     public TableView<FileInfo> clientTab;
     @FXML
@@ -58,16 +55,28 @@ public class TableController implements Initializable {
     public TableColumn<FileInfo, String> clientFileName;
     @FXML
     public TableColumn<FileInfo, String> clientFileType;
+    @FXML
+    public Button tryToAuth;
+    @FXML
+    public Button tryToReg;
+    @FXML
+    public TextField pswdField;
+    @FXML
+    public TextField userName;
+    @FXML
+    public HBox loginPanel;
 
     private DataInputStream is;
     private DataOutputStream os;
 
     private File currentDir;
-    private File serverRootDir;
+    private String serverRootDir;
 
     private String newDirName;
     private Stage newFileStage;
     private Stage regStage;
+
+    private Stage stage;
 
     private NewFileController newFileController;
     private regController regController;
@@ -101,17 +110,22 @@ public class TableController implements Initializable {
                 }
                 if (command.equals("#ROOTDIR")) {
                     String fileName = is.readUTF();
-                    System.out.println(fileName);
-//                    serverRootDir  = new File(System.getProperty(fileName));
-//                    Path path = serverRootDir.toPath().resolve(fileName);
-//                    serverRootDir = path.toFile();
+//                    System.out.println(fileName);
+                    serverRootDir = fileName;
                     serverDir.setText(fileName);
                 }
                 if (command.equals("#regOk")) {
                     regController.regResult("Регистрация прошла успешно");
+                    nickname = userName.getText();
+                    tryToReg.setDisable(true);
                 }
                 if (command.equals("#regNo")) {
                     regController.regResult("Логин или никнейм уже заняты");
+                }
+                if (command.equals("#AuthOK")) {
+                    loginPanel.setVisible(false);
+                    nickname = userName.getText();
+                    setTitle(nickname);
                 }
 
             }
@@ -170,7 +184,11 @@ public class TableController implements Initializable {
         serverTab.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
                 FileInfo selectedFile = serverTab.getSelectionModel().getSelectedItem();
-//                System.out.println("Selected: " + selectedFile.getFileName());
+                if (selectedFile.getFileName().equals("..")) {
+                    if (selectedFile.getFileName().equals(serverRootDir)) {
+                        return;
+                    }
+                }
                 if (selectedFile.getFileType().equals("[DIR]")) {
                     try {
                         os.writeUTF("#LIST#DIR");
@@ -284,11 +302,11 @@ public class TableController implements Initializable {
     }
 
     public void registration(String login, String password, String nickname) throws IOException {
-        String regMsg = String.format("%s %s %s",login, password, nickname);
+        String regMsg = String.format("%s %s %s", login, password, nickname);
         os.writeUTF("#NEW#USER");
         os.writeUTF(regMsg);
         os.flush();
-     }
+    }
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -306,7 +324,7 @@ public class TableController implements Initializable {
         String password = pswdField.getText().trim();
 
         String str = String.format("#AUTH %s %s", login, password);
-        System.out.println("Auth command: " + str);
+//        System.out.println("Auth command: " + str);
         os.writeUTF("#AUTH");
         os.writeUTF(str);
         os.flush();
@@ -334,5 +352,23 @@ public class TableController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void clientUpDir(ActionEvent actionEvent) {
+        String rootPath = currentDir.toPath().getRoot().toString();
+        if (!rootPath.toString().equals(currentDir.toString())) {
+            clientList.add(new FileInfo("..", "[DIR]"));
+        }
+    }
+
+    private void setTitle(String nickname) {
+        stage = (Stage) clientDir.getScene().getWindow();
+        Platform.runLater(() -> {
+        if (!nickname.equals("")) {
+            stage.setTitle(String.format("MyCloud - [ %s ]", nickname));
+        } else {
+            stage.setTitle("MyCloud - необходимо авторизоваться...");
+        }
+        });
     }
 }

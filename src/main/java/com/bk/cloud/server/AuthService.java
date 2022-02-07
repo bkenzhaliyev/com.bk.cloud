@@ -9,6 +9,7 @@ public interface AuthService {
      * */
     String getNicknameByLoginAndPassword(String login, String password);
 
+    String getRootDirByLoginAndPassword(String login, String password);
     /**
      * Метод для попытки регистрации новой учетной записи
      *

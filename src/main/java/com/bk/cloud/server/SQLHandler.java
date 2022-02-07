@@ -46,6 +46,22 @@ public class SQLHandler {
         return nick;
     }
 
+    public static String getRootDirByLoginAndPassword(String login, String password) {
+        String rootDir = null;
+        try {
+            psGetRootDir.setString(1, login);
+            psGetRootDir.setString(2, password);
+            ResultSet rs = psGetRootDir.executeQuery();
+            if (rs.next()) {
+                rootDir = rs.getString(1);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rootDir;
+    }
+
     public static boolean registration(String login, String password, String nickname) {
         try {
             psRegistration.setString(1, login);

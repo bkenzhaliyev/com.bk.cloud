@@ -16,7 +16,7 @@
       fx:controller="com.bk.cloud.client.TableController">
     <HBox>
         <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="419.0" prefWidth="825.0">
-         <HBox prefHeight="34.0" prefWidth="815.0">
+         <HBox prefHeight="34.0" prefWidth="815.0" fx:id="loginPanel">
             <children>
                <Label prefHeight="25.0" prefWidth="46.0" text="Логин" />
                <TextField fx:id="userName" prefHeight="25.0" prefWidth="169.0" />
@@ -43,6 +43,7 @@
                         </ImageView>
                     </graphic>
                 </Button>
+                <Button fx:id="clientUpDir" onAction="#clientUpDir" text=".." HBox.hgrow="ALWAYS" />
                 <TextField fx:id="serverDir" disable="true" editable="false" prefHeight="25.0" prefWidth="392.0" />
             </children>
          </HBox>
